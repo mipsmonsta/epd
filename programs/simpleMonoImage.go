@@ -16,7 +16,7 @@ func main() {
 	e.Setup()
 	e.Clear()
 
-	img, err := imageutil.OpenImage("../test/test.jpg")
+	img, err := imageutil.OpenImage("../imageutil/test/test.jpg")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
