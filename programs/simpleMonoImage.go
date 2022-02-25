@@ -26,5 +26,4 @@ func main() {
 
 	e.Sleep()
 
-	e.Config.Destroy()
 }
