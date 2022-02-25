@@ -5,7 +5,6 @@ import (
 
 	"periph.io/x/conn/v3/gpio"
 	"periph.io/x/conn/v3/gpio/gpioreg"
-	"periph.io/x/conn/v3/physic"
 	"periph.io/x/conn/v3/spi"
 	"periph.io/x/conn/v3/spi/spireg"
 	"periph.io/x/host/v3"
@@ -43,7 +42,7 @@ func (d *EpdConfig) Setup() error {
 		log.Fatal(err)
 	}
 
-	d.Conn, err = d.Port.Connect(4*physic.MegaHertz, spi.Mode0, 8)
+	d.Conn, err = d.Port.Connect(4000000, spi.Mode0, 8)
 	if err != nil {
 		log.Fatal(err)
 	}
