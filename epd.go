@@ -79,7 +79,7 @@ func (e *Epd) Reset() {
 	e.Config.Digital_writeRST(gpio.High)
 	time.Sleep(200*time.Millisecond)
 	e.Config.Digital_writeRST(gpio.Low)
-	time.Sleep(2*time.Millisecond)
+	time.Sleep(5*time.Millisecond)
 	e.Config.Digital_writeRST(gpio.High)
 	time.Sleep(200*time.Millisecond)
 }
@@ -100,7 +100,7 @@ func (e *Epd) Send_data(data byte){
 
 func (e *Epd) ReadBusy(){
 	for e.Config.Digital_readBS() == gpio.Low { //low is idle; 1 is busy
-		time.Sleep(100*time.Millisecond)
+		time.Sleep(200*time.Millisecond)
 	}
 }
 
@@ -132,52 +132,70 @@ func (e *Epd) Setup(){
 
 	e.Reset()
 	
-	e.Send_command(0x04) //power on
-	e.ReadBusy()
+	e.Send_command(0x01) // POWER_SETTING
+    e.Send_data(0x03) // VDS_EN, VDG_EN
+    e.Send_data(0x00) // VCOM_HV, VGHL_LV[1], VGHL_LV[0]
+    e.Send_data(0x2b) // VDH
+    e.Send_data(0x2b) // VDL
+    e.Send_data(0x09) // VDHR
+        
+    e.Send_command(0x06) // BOOSTER_SOFT_START
+    e.Send_data(0x07)
+    e.Send_data(0x07)
+    e.Send_data(0x17)
+        
+    // Power optimization
+    e.Send_command(0xF8)
+    e.Send_data(0x60)
+    e.Send_data(0xA5)
+        
+    // Power optimization
+    e.Send_command(0xF8)
+    e.Send_data(0x89)
+    e.Send_data(0xA5)
+        
+	// Power optimization
+    e.Send_command(0xF8)
+    e.Send_data(0x90)
+    e.Send_data(0x00)
+        
+    // Power optimization
+    e.Send_command(0xF8)
+    e.Send_data(0x93)
+    e.Send_data(0x2A)
+        
+    // Power optimization
+    e.Send_command(0xF8)
+    e.Send_data(0xA0)
+    e.Send_data(0xA5)
+        
+    // Power optimization
+    e.Send_command(0xF8)
+    e.Send_data(0xA1)
+    e.Send_data(0x00)
+        
+    // Power optimization
+    e.Send_command(0xF8)
+    e.Send_data(0x73)
+    e.Send_data(0x41)
+        
+    e.Send_command(0x16) // PARTIAL_DISPLAY_REFRESH
+    e.Send_data(0x00)
+    e.Send_command(0x04) // POWER_ON
+    e.ReadBusy()
 
-	e.Send_command(0x00) //panel setting
-	e.Send_data(0xaf)
-
-	e.Send_command(0x30) //PILL control
-	e.Send_data(0x3a) ///3a 100Hz, 29 150Hz, 39 200Hz, 31 171Hax
-
-	e.Send_command(0x01) //power setting
-	e.Send_data(0x03)
-	e.Send_data(0x00)
-	e.Send_data(0x2b)
-	e.Send_data(0x2b)
-	e.Send_data(0x09)
-
-	e.Send_command(0x06)
-	e.Send_data(0x07)
-	e.Send_data(0x07)
-	e.Send_data(0x17)
-
-	e.Send_command(0xF8)
-	e.Send_data(0x60)
-	e.Send_data(0xA5)
-
-	e.Send_command(0xF8)
-	e.Send_data(0x90)
-	e.Send_data(0x00)
-
-	e.Send_command(0xF8)
-	e.Send_data(0x93)
-	e.Send_data(0x2A)
-
-	e.Send_command(0xF8)
-	e.Send_data(0x73)
-	e.Send_data(0x41)
-
-	e.Send_command(0x82)
-	e.Send_data(0x12)
-	e.Send_command(0x50)
-	e.Send_data(0x87)
-
-	e.Set_lut()
-
-	e.Send_command(0x16) //partial display refresh
-	e.Send_data(0x00)
+    e.Send_command(0x00) // PANEL_SETTING
+    e.Send_data(0xAF) // KW-BF   KWR-AF    BWROTP 0f
+        
+    e.Send_command(0x30) // PLL_CONTROL
+    e.Send_data(0x3A)  // 3A 100HZ   29 150Hz 39 200HZ    31 171HZ
+    
+    e.Send_command(0X50) // VCOM AND DATA INTERVAL SETTING			
+    e.Send_data(0x57)
+        
+    e.Send_command(0x82) // VCM_DC_SETTING_REGISTER
+    e.Send_data(0x12)
+    e.Set_lut()
 }
 
 func (e *Epd) Clear(){
