@@ -43,7 +43,7 @@ func (d *EpdConfig) Setup() error {
 		log.Fatal(err)
 	}
 
-	d.Conn, err = d.Port.Connect(400*physic.KiloHertz, spi.Mode0, 8)
+	d.Conn, err = d.Port.Connect(4*physic.MegaHertz, spi.Mode0, 8)
 	if err != nil {
 		log.Fatal(err)
 	}
