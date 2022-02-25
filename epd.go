@@ -201,17 +201,12 @@ func (e *Epd) Setup(){
 func (e *Epd) Clear(){
 	e.Send_command(0x10)
 	for i:=0; i < EPD_WIDTH  * EPD_HEIGHT / 8; i++{
-		e.Send_data(0x00)
+		e.Send_data(0xFF)
 	}
-	e.Send_command(0x11)
-	
 	e.Send_command(0x13)
 	for i:=0; i < EPD_WIDTH  * EPD_HEIGHT / 8; i++{
-		e.Send_data(0x00)
-	}
-
-	e.Send_command(0x11)
-	
+		e.Send_data(0xFF)
+	}	
 	e.Send_command(0x12)
 	e.ReadBusy()
 
