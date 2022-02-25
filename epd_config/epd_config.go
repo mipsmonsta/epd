@@ -84,7 +84,6 @@ func (d *EpdConfig) Destroy() {
 }
 
 func (d *EpdConfig) WriteBytes(data []byte){
-	log.Printf("data: %s\n", data)
 	if err := d.Conn.Tx(data, nil); err != nil{
 		log.Println(err)
 	}
