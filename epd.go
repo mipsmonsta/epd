@@ -259,7 +259,7 @@ func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 				log.Fatalf("color.color conversion went wrong")
 			}
 			c := originalColor.R
-			if c > 200 {
+			if c > 127 {
 				col = append(col, uint8(0))
 			} else {
 				col = append(col, uint8(1))
