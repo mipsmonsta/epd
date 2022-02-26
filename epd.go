@@ -245,6 +245,11 @@ func (e *Epd) Display(img *image.Image){
 func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 	p := imageutil.GetImageTensor(*img)
 
+	//convert to greyscale tensor
+	intermediateImg := imageutil.ConvertGreyScale(&p)
+
+	p = imageutil.GetImageTensor(intermediateImg)
+
 	for x:=0; x < len(p); x++ {
 		col := []uint8{}
 		for y:=0; y < len(p[0]); y++ {
@@ -253,7 +258,7 @@ func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 			if !ok {
 				log.Fatalf("color.color conversion went wrong")
 			}
-			c := (float64(originalColor.R) + float64(originalColor.G) + float64(originalColor.B) / float64(3.0))
+			c := originalColor.R
 			if c > 200 {
 				col = append(col, uint8(0))
 			} else {
