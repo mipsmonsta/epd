@@ -246,9 +246,11 @@ func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 	p := imageutil.GetImageTensor(*img)
 
 	//convert to greyscale tensor
-	intermediateImg := imageutil.ConvertGreyScale(&p)
+	intermediateGreyImg := imageutil.ConvertGreyScale(&p)
+	threshold := computeOstuThreshold(&intermediateGreyImg)
 
-	p = imageutil.GetImageTensor(intermediateImg)
+	//obtained greyscale tensor 
+	p = imageutil.GetImageTensor(intermediateGreyImg)
 
 	for x:=0; x < len(p); x++ {
 		col := []uint8{}
@@ -258,14 +260,74 @@ func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 			if !ok {
 				log.Fatalf("color.color conversion went wrong")
 			}
-			c := originalColor.R
-			if c > 127 {
+			c := originalColor.R //G and B are same as R since greyscale tensor
+			if c > uint8(threshold) {
 				col = append(col, uint8(0))
 			} else {
 				col = append(col, uint8(1))
 			}
 		}
 		monochrome = append(monochrome, col)
+	}
+	return 
+}
+
+func getHistorgramGreyscaleTensor(grey *image.Image) (hist []int, numPixels int){
+	pg := *grey
+	size := pg.Bounds().Size()
+	his := make([]int, 256)
+	for x:=0; x < size.X; x++{
+		for y:=0; y < size.Y; y++{
+			clr := pg.At(x, y)
+			originalColor, ok := color.RGBAModel.Convert(clr).(color.RGBA)
+			if ok {
+				his[int(originalColor.R)]++
+			}
+
+		}
+	}
+	numPixels = size.X * size.Y
+	hist = his
+	return
+}
+
+func computeOstuThreshold(grey *image.Image) (threshold int) {
+	hist, numPixels := getHistorgramGreyscaleTensor(grey)
+
+	sum := float64(0);
+
+	for t:=0; t < 256; t++{
+		sum += float64(t * hist[t])
+	}
+	sumB := float64(0)
+	wB := 0
+	wF := 0
+	varMax := float64(0)
+	
+
+	for t:=0; t < 256; t++{
+		wB += hist[t];
+		if wB == 0{
+			continue
+		}
+
+		wF = numPixels - wB
+		if wF == 0{
+			break
+		}
+
+		sumB += float64(t * hist[t])
+
+		mB := sumB / float64(wB)
+		mF := (sum - sumB) / float64(wF)
+
+		//calculte Between Class Variance
+		varBetween := float64(wB) * float64(wF) * (mB - mF) * (mB - mF)
+	
+		if varBetween > varMax {
+			varMax = varBetween
+			threshold = t
+		}
 	}
 	return 
 }
@@ -281,7 +343,7 @@ func GetEPDBuffer(monochrome [][]uint8) []byte{
 	}
 
 	if imgWidth == EPD_WIDTH && imgHeight == EPD_HEIGHT {
-		//image is vertical
+		//image is verticals
 		for y:=0; y < imgHeight; y++{
 			for x:=0; x < imgWidth; x++ {
 				if monochrome[x][y] == 0 {

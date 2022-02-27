@@ -187,3 +187,5 @@ func OrientateAndFitImage(img *image.Image, toWidth int, toHeight int) image.Ima
 	}
 	return result
 }
+
+
