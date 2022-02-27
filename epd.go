@@ -3,6 +3,7 @@ package epd
 import (
 	"epd/epd_config"
 	"epd/imageutil"
+	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -248,7 +249,7 @@ func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 	//convert to greyscale tensor
 	intermediateGreyImg := imageutil.ConvertGreyScale(&p)
 	threshold := computeOstuThreshold(&intermediateGreyImg)
-
+	fmt.Printf("Computed threshold %d \n", threshold)
 	//obtained greyscale tensor 
 	p = imageutil.GetImageTensor(intermediateGreyImg)
 
