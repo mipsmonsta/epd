@@ -258,7 +258,7 @@ func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 		for y:=1; y < len(p[0])+1; y++ {
 			pix := dithered[x][y]
 			
-			if pix > uint16(threshold) {
+			if pix < uint16(threshold) {
 				col = append(col, uint8(0))
 			} else {
 				col = append(col, uint8(1))
@@ -371,6 +371,8 @@ func findClosetPaletteColorWithThreshold(oldPixelColor uint16, threshold int) (n
 
 	if oldPixelColor > uint16(threshold){
 		newGrey = 255 //clipped
+	} else {
+		newGrey = 0
 	}
 	quant_error = oldPixelColor - newGrey //will always be a positive uint16 or zero
 
@@ -379,14 +381,14 @@ func findClosetPaletteColorWithThreshold(oldPixelColor uint16, threshold int) (n
 
 func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) [][]uint16{ //use uint16 to prevent overflow of uint8
 	var greypixUint16 [][]uint16
-	var y_zeros []uint16
+	y_zeros := []uint16{}
 	for a:=0; a < len(pixels[0]) + 2; a++{
 		y_zeros = append(y_zeros, 0)
 	}
 	greypixUint16 = append(greypixUint16, y_zeros) //add left zeros
 
 	for x:=0; x < len(pixels); x++{	
-		var y_pixels []uint16
+		y_pixels := []uint16{}
 		y_pixels = append(y_pixels, 0) //add top zeros
 		for y:=0; y < len(pixels[0]); y++{
 			clr := pixels[x][y]
@@ -400,6 +402,7 @@ func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) [
 		greypixUint16 = append(greypixUint16, y_pixels)
 	}
 	
+	y_zeros = []uint16{}
 	for a:=0; a < len(pixels[0]) + 2; a++{
 		y_zeros = append(y_zeros, 0)
 	}
