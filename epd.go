@@ -372,14 +372,18 @@ func findClosetPaletteColorWithThreshold(oldPixelColor uint16, threshold int) (n
 	if oldPixelColor > uint16(threshold){
 		newGrey = 255 //clipped
 	}
-	quant_error = oldPixelColor - newGrey //will always be a positive uint8 or zero
+	quant_error = oldPixelColor - newGrey //will always be a positive uint16 or zero
 
 	return
 }
 
 func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) [][]uint16{ //use uint16 to prevent overflow of uint8
 	var greypixUint16 [][]uint16
-	greypixUint16 = append(greypixUint16, make([]uint16, len(pixels[0]) + 2)) //add left zeros
+	var y_zeros []uint16
+	for a:=0; a < len(pixels[0]) + 2; a++{
+		y_zeros = append(y_zeros, 0)
+	}
+	greypixUint16 = append(greypixUint16, y_zeros) //add left zeros
 
 	for x:=0; x < len(pixels); x++{	
 		var y_pixels []uint16
@@ -395,8 +399,11 @@ func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) [
 		y_pixels = append(y_pixels, 0) //add bottom zeros
 		greypixUint16 = append(greypixUint16, y_pixels)
 	}
-
-	greypixUint16 = append(greypixUint16, make([]uint16, len(pixels[0]) + 2)) //add right zeros
+	
+	for a:=0; a < len(pixels[0]) + 2; a++{
+		y_zeros = append(y_zeros, 0)
+	}
+	greypixUint16 = append(greypixUint16, y_zeros) //add left zeros//add right zeros
 
 
 	for x:=1; x < len(pixels) + 1 ; x++{	
@@ -406,6 +413,7 @@ func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) [
 			newClr, quant_error := findClosetPaletteColorWithThreshold(greypixUint16[x][y], threshold)
 
 			greypixUint16[x][y] = newClr
+			fmt.Println(x, y, newClr)
 			greypixUint16[x+1][y] += quant_error * uint16(7) / uint16(16)
 			greypixUint16[x-1][y+1] += quant_error * uint16(3) / uint16(16)
 			greypixUint16[x][y+1] += quant_error * uint16(5) / uint16(16)
