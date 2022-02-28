@@ -415,9 +415,25 @@ func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) (
 			newClr, quant_error := findClosetPaletteColorWithThreshold(greypixUint16[x][y], threshold)
 			greypixUint16[x][y] = newClr
 			greypixUint16[x+1][y] += quant_error * uint16(7) / uint16(16)
+			if greypixUint16[x+1][y] > 255{
+				greypixUint16[x+1][y] = 255
+
+			}
 			greypixUint16[x-1][y+1] += quant_error * uint16(3) / uint16(16)
+			if greypixUint16[x-1][y+1] > 255{
+				greypixUint16[x-1][y+1] = 255
+
+			}
 			greypixUint16[x][y+1] += quant_error * uint16(5) / uint16(16)
+			if greypixUint16[x][y+1] > 255{
+				greypixUint16[x][y+1] = 255
+
+			}
 			greypixUint16[x+1][y+1] += quant_error * uint16(1) / uint16(16)
+			if greypixUint16[x+1][y+1] > 255{
+				greypixUint16[x+1][y+1] = 255
+
+			}
 		}
 	}
 
