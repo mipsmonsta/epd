@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"log"
 	"time"
 
 	"periph.io/x/conn/v3/gpio"
@@ -252,17 +251,14 @@ func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 	fmt.Printf("Computed threshold %d \n", threshold)
 	//obtained greyscale tensor 
 	p = imageutil.GetImageTensor(intermediateGreyImg)
+	dithered := fsDitheringGreyTensorWithThreshold(p, threshold)
 
-	for x:=0; x < len(p); x++ {
+	for x:=1; x < len(p)+1; x++ {
 		col := []uint8{}
-		for y:=0; y < len(p[0]); y++ {
-			pix := p[x][y]
-			originalColor, ok:= color.RGBAModel.Convert(pix).(color.RGBA)
-			if !ok {
-				log.Fatalf("color.color conversion went wrong")
-			}
-			c := originalColor.R //G and B are same as R since greyscale tensor
-			if c > uint8(threshold) {
+		for y:=1; y < len(p[0])+1; y++ {
+			pix := dithered[x][y]
+			
+			if pix > uint16(threshold) {
 				col = append(col, uint8(0))
 			} else {
 				col = append(col, uint8(1))
@@ -371,6 +367,54 @@ func GetEPDBuffer(monochrome [][]uint8) []byte{
 	return buf
 }
 
+func findClosetPaletteColorWithThreshold(oldPixelColor uint16, threshold int) (newGrey uint16, quant_error uint16){
+
+	if oldPixelColor > uint16(threshold){
+		newGrey = 255 //clipped
+	}
+	quant_error = oldPixelColor - newGrey //will always be a positive uint8 or zero
+
+	return
+}
+
+func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) [][]uint16{ //use uint16 to prevent overflow of uint8
+	var greypixUint16 [][]uint16
+	greypixUint16 = append(greypixUint16, make([]uint16, len(pixels[0]) + 2)) //add left zeros
+
+	for x:=0; x < len(pixels); x++{	
+		var y_pixels []uint16
+		y_pixels = append(y_pixels, 0) //add top zeros
+		for y:=0; y < len(pixels[0]); y++{
+			clr := pixels[x][y]
+			originalClr, ok := color.RGBAModel.Convert(clr).(color.RGBA)
+			if !ok {
+				break
+			}
+			y_pixels = append(y_pixels, uint16(originalClr.R))
+		}
+		y_pixels = append(y_pixels, 0) //add bottom zeros
+		greypixUint16 = append(greypixUint16, y_pixels)
+	}
+
+	greypixUint16 = append(greypixUint16, make([]uint16, len(pixels[0]) + 2)) //add right zeros
+
+
+	for x:=1; x < len(pixels) + 1 ; x++{	
+		for y:=1; y < len(pixels[0]) + 1; y++{ 
+			//https://www.visgraf.impa.br/Courses/ip00/proj/Dithering1/floyd_steinberg_dithering.html
+			//https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering
+			newClr, quant_error := findClosetPaletteColorWithThreshold(greypixUint16[x][y], threshold)
+
+			greypixUint16[x][y] = newClr
+			greypixUint16[x+1][y] += quant_error * uint16(7) / uint16(16)
+			greypixUint16[x-1][y+1] += quant_error * uint16(3) / uint16(16)
+			greypixUint16[x][y+1] += quant_error * uint16(5) / uint16(16)
+			greypixUint16[x+1][y+1] += quant_error * uint16(1) / uint16(16)
+		}
+	}
+
+	return greypixUint16 // bigger width + 2 and height + 2
+}
 
 
 
