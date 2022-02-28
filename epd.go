@@ -375,7 +375,6 @@ func findClosetPaletteColorWithThreshold(oldPixelColor uint16, threshold int) (n
 		newGrey = 0
 	}
 	quant_error = oldPixelColor - newGrey //will always be a positive uint16 or zero
-	fmt.Println(quant_error)
 	return
 }
 
