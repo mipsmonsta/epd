@@ -258,9 +258,9 @@ func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
 		for y:=1; y < len(p[0])+1; y++ {
 			pix := dithered[x][y]
 			
-			if pix > uint16(threshold) {
+			if pix == 0 {
 				col = append(col, uint8(0))
-			} else {
+			} else if pix == 255{
 				col = append(col, uint8(1))
 			}
 		}
