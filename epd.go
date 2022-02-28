@@ -395,6 +395,7 @@ func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) (
 			if !ok {
 				break
 			}
+			fmt.Println(x, y, originalClr.R)
 			y_pixels = append(y_pixels, uint16(originalClr.R))
 		}
 		y_pixels = append(y_pixels, 0) //add bottom zeros
