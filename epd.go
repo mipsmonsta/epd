@@ -375,7 +375,7 @@ func findClosetPaletteColorWithThreshold(oldPixelColor uint16, threshold int) (n
 		newGrey = 0
 	}
 	quant_error = oldPixelColor - newGrey //will always be a positive uint16 or zero
-
+	fmt.Println(quant_error)
 	return
 }
 
@@ -413,7 +413,6 @@ func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) (
 			//https://www.visgraf.impa.br/Courses/ip00/proj/Dithering1/floyd_steinberg_dithering.html
 			//https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering
 			newClr, quant_error := findClosetPaletteColorWithThreshold(greypixUint16[x][y], threshold)
-			fmt.Println(x, y, newClr, quant_error)
 			greypixUint16[x][y] = newClr
 			greypixUint16[x+1][y] += quant_error * uint16(7) / uint16(16)
 			greypixUint16[x-1][y+1] += quant_error * uint16(3) / uint16(16)
