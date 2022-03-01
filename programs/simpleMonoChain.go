@@ -23,17 +23,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	e.Display(&img)
+	e.Display(&img, epd.MODE_MONO_DITHER_OFF)
 
-	time.Sleep(5*time.Second)
+	time.Sleep(5 * time.Second)
 
-	img, err = imageutil.OpenImage("../imageutil/test/test_shiba.jpg")
+	img, err = imageutil.OpenImage("../imageutil/test/test_portrait.jpg")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	
-	e.Display(&img)
+
+	e.Display(&img, epd.MODE_MONO_DITHER_ON)
 
 	e.Sleep()
 

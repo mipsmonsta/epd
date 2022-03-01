@@ -47,7 +47,7 @@ imageutil/imageutil.go - where you can use the functions written to manipulate i
 >		os.Exit(1)
 >	}
 >
->	e.Display(&img)
+>	e.Display(&img, epd.MODE_MONO_DITHER_ON)
 >
 >	time.Sleep(5*time.Second)
 >
@@ -57,13 +57,13 @@ imageutil/imageutil.go - where you can use the functions written to manipulate i
 >		os.Exit(1)
 >	}
 >	
->	e.Display(&img)
+>	e.Display(&img, epd.MODE_MONO_DITHER_OFF)
 >
 >	e.Sleep()
 
 ## Road map of features:
 Implemented:
-- Display image in monochrome (1 bit black and white)
+- Display image in monochrome (1 bit black and white) with / without dithering
 - [Flody-Steinberg Dithering](https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering)
 - Auto detect orientation (portriat or landscape) and fit into the screen size
 
