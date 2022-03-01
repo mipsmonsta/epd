@@ -404,7 +404,7 @@ func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) (
 	for a:=0; a < len(pixels[0]) + 2; a++{
 		y_zeros = append(y_zeros, 0)
 	}
-	greypixUint16 = append(greypixUint16, y_zeros) //add left zeros//add right zeros
+	greypixUint16 = append(greypixUint16, y_zeros) //add right zeros
 
 
 	for x:=1; x < len(pixels) + 1 ; x++{	
