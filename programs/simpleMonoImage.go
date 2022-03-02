@@ -22,7 +22,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	e.Display(&img)
+	e.Display(&img, epd.MODE_MONO_DITHER_ON)
 
 	e.Sleep()
 
