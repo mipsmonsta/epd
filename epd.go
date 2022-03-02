@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"log"
 	"time"
 
 	"periph.io/x/conn/v3/gpio"
@@ -69,6 +70,60 @@ var (
 		0x00, 0x03, 0x0E, 0x00, 0x00, 0x0A,
 		0x00, 0x23, 0x00, 0x00, 0x00, 0x01,
 	}
+
+	//0-3 gray
+	gray_lut_vcom = []byte{
+    0x00, 0x00,
+    0x00, 0x0A, 0x00, 0x00, 0x00, 0x01,
+    0x60, 0x14, 0x14, 0x00, 0x00, 0x01,
+    0x00, 0x14, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x13, 0x0A, 0x01, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,				
+	}	
+
+    //R21
+    gray_lut_ww =[]byte{
+    0x40, 0x0A, 0x00, 0x00, 0x00, 0x01,
+    0x90, 0x14, 0x14, 0x00, 0x00, 0x01,
+    0x10, 0x14, 0x0A, 0x00, 0x00, 0x01,
+    0xA0, 0x13, 0x01, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}
+    //R22H	r
+    gray_lut_bw = []byte {
+    0x40, 0x0A, 0x00, 0x00, 0x00, 0x01,
+    0x90, 0x14, 0x14, 0x00, 0x00, 0x01,
+    0x00, 0x14, 0x0A, 0x00, 0x00, 0x01,
+    0x99, 0x0C, 0x01, 0x03, 0x04, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}	
+
+    //R23H	w
+    gray_lut_wb = []byte{
+    0x40, 0x0A, 0x00, 0x00, 0x00, 0x01,
+    0x90, 0x14, 0x14, 0x00, 0x00, 0x01,
+    0x00, 0x14, 0x0A, 0x00, 0x00, 0x01,
+    0x99, 0x0B, 0x04, 0x04, 0x01, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}
+    //R24H	b
+    gray_lut_bb = []byte{
+    0x80, 0x0A, 0x00, 0x00, 0x00, 0x01,
+    0x90, 0x14, 0x14, 0x00, 0x00, 0x01,
+    0x20, 0x14, 0x0A, 0x00, 0x00, 0x01,
+    0x50, 0x13, 0x01, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}
 )
 
 type Epd struct {
@@ -124,6 +179,38 @@ func (e *Epd) Set_lut(){
 	e.Send_command(0x24) //bb b
 	for count:=0; count < 42; count++{
 		e.Send_data(lut_wb[count])
+	}
+}
+
+func (e *Epd) Gray_SetLut(){
+	e.Send_command(0x20)
+	for count:=0; count < 44; count++{
+		e.Send_data(gray_lut_vcom[count])
+	}
+      
+    e.Send_command(0x21)		
+	for count:=0; count < 42; count++{ 	//red not use
+		e.Send_data(gray_lut_ww[count])
+	}			
+	
+	e.Send_command(0x22)		
+	for count:=0; count < 42; count++{ 	//bw r
+		e.Send_data(gray_lut_bw[count])
+	}					
+ 
+    e.Send_command(0x23)				//wb w
+	for count:=0; count < 42; count++{ 	
+		e.Send_data(gray_lut_wb[count])
+	}	
+
+	e.Send_command(0x24)				//bb b
+	for count:=0; count < 42; count++{ 	
+		e.Send_data(gray_lut_bb[count])
+	}	
+  
+	e.Send_command((0x25))				//vcom
+	for count:=0; count < 42; count++{ 	
+		e.Send_data(gray_lut_ww[count])
 	}
 }
 
@@ -198,6 +285,73 @@ func (e *Epd) Setup(){
     e.Set_lut()
 }
 
+func (e *Epd) Setup_4Gray(){
+	e.Reset()
+
+	 	e.Send_command(0x01)			//POWER SETTING
+        e.Send_data (0x03)
+        e.Send_data (0x00)    
+        e.Send_data (0x2b)															 
+        e.Send_data (0x2b)		
+
+        e.Send_command(0x06)         //booster soft start
+        e.Send_data (0x07)		//A
+        e.Send_data (0x07)		//B
+        e.Send_data (0x17)		//C 
+
+        e.Send_command(0xF8)         //boost??
+        e.Send_data (0x60)
+        e.Send_data (0xA5)
+
+        e.Send_command(0xF8)         //boost??
+        e.Send_data (0x89)
+        e.Send_data (0xA5)
+
+        e.Send_command(0xF8)         //boost??
+        e.Send_data (0x90)
+        e.Send_data (0x00)
+
+        e.Send_command(0xF8)         //boost??
+        e.Send_data (0x93)
+        e.Send_data (0x2A)
+
+        e.Send_command(0xF8)         //boost??
+        e.Send_data (0xa0)
+        e.Send_data (0xa5)
+
+        e.Send_command(0xF8)         //boost??
+        e.Send_data (0xa1)
+        e.Send_data (0x00)
+
+        e.Send_command(0xF8)         //boost??
+        e.Send_data (0x73)
+        e.Send_data (0x41)
+
+        e.Send_command(0x16)
+        e.Send_data(0x00)	
+
+        e.Send_command(0x04)
+        e.ReadBusy()
+
+        e.Send_command(0x00)			//panel setting
+        e.Send_data(0xbf)		//KW-BF   KWR-AF	BWROTP 0f
+
+        e.Send_command(0x30)			//PLL setting
+        e.Send_data (0x90)      	//100hz 
+
+        e.Send_command(0x61)			//resolution setting
+        e.Send_data (0x00)		//176
+        e.Send_data (0xb0)     	 
+        e.Send_data (0x01)		//264
+        e.Send_data (0x08)
+
+        e.Send_command(0x82)			//vcom_DC setting
+        e.Send_data (0x12)
+
+        e.Send_command(0X50)			///VCOM AND DATA INTERVAL SETTING			
+        e.Send_data(0x57)
+}
+
 func (e *Epd) Clear(){
 	e.Send_command(0x10)
 	for i:=0; i < EPD_WIDTH  * EPD_HEIGHT / 8; i++{
@@ -240,6 +394,119 @@ func (e *Epd) Display(img *image.Image){
 	e.Send_command(0x12)
 	e.ReadBusy()
 	
+}
+
+func (e *Epd) Display_4Gray(img *image.Image){
+	orientAndfittedImage := imageutil.OrientateAndFitImage(img, EPD_WIDTH, EPD_HEIGHT)
+	
+	monochromeTensor := ConvertImagetoMonochromeEPDTensor(&orientAndfittedImage)
+
+	///TODO, convert 8 bit grayscale to 2 bit grayscale
+	monochromeBslices:= GetEPDBuffer_4Gray(monochromeTensor)
+	e.Send_command(0x10)
+	for i:=0; i < EPD_HEIGHT * EPD_WIDTH / 4; i++ {
+		var temp3 uint8
+		for j:=0; j < 2; j++{
+			temp1 := monochromeBslices[i*2+j]
+			for k:=0; k < 2; k++{
+				temp2 := temp1&0xC0 //0xC0 is 1100 0000
+				if temp2 == 0xC0{
+					temp3 |= 0x01 //white
+				}else if temp2 == 0x00{
+					temp3 |= 0x00 //black
+				}else if temp2 == 0x08 {
+					temp3 |= 0x01 //gray1
+				}else {//0x40
+					temp3 |= 0x00 //gray2
+				}
+
+				temp1 <<=2
+				temp2 = temp1&0xC0
+				if temp2 == 0xC0 { //white
+					temp3 |= 0x01
+				}else if temp2 == 0x00{ //black
+					temp3 |= 0x00
+				}else if temp2 == 0x80{
+					temp3 |= 0x01 //gray1
+				}else{ //0x04
+					temp3 |= 0x00 //gray2
+				}
+				if j!=1 || k!=1{
+					temp3 <<= 1
+				}
+				temp1 <<= 2
+			}
+		}
+		e.Send_data(temp3)
+	}
+
+	e.Send_command(0x13)
+	for i:=0; i < EPD_HEIGHT * EPD_WIDTH / 4; i++ {
+		var temp3 uint8
+		for j:=0; j < 2; j++{
+			temp1 := monochromeBslices[i*2+j]
+			for k:=0; k < 2; k++{
+				temp2 := temp1&0xC0 //0xC0 is 1100 0000
+				if temp2 == 0xC0{
+					temp3 |= 0x01 //white
+				}else if temp2 == 0x00{
+					temp3 |= 0x00 //black
+				}else if temp2 == 0x08 {
+					temp3 |= 0x00 //gray1
+				}else {//0x40
+					temp3 |= 0x01 //gray2
+				}
+
+				temp1 <<=2
+				temp2 = temp1&0xC0
+				if temp2 == 0xC0 { //white
+					temp3 |= 0x01
+				}else if temp2 == 0x00{ //black
+					temp3 |= 0x00
+				}else if temp2 == 0x80{
+					temp3 |= 0x00 //gray1
+				}else{ //0x40
+					temp3 |= 0x01 //gray2
+				}
+				if j!=1 || k!=1{
+					temp3 <<= 1
+				}
+				temp1 <<= 2
+			}
+		}
+		e.Send_data(temp3)
+	}
+	e.Gray_SetLut()
+	e.Send_command(0x12)
+	time.Sleep(200*time.Millisecond)
+	e.ReadBusy()
+	
+}
+
+func ConvertImageto4GrayEPDTensor(img *image.Image)(gray [][]uint8){
+	p := imageutil.GetImageTensor(*img)
+
+	//convert to greyscale tensor
+	intermediateGreyImg := imageutil.ConvertGreyScale(&p)
+	
+	p = imageutil.GetImageTensor(intermediateGreyImg)
+
+	for x:=0; x < len(p); x++ {
+		col := []uint8{}
+		
+		for y:=0; y < len(p[0]); y++ {
+			pix := p[x][y]
+			
+			originalClr, ok := color.RGBAModel.Convert(pix).(color.RGBA)
+			if !ok {
+				log.Fatalln("Color is not RGBA format.")
+			} 
+			clr := originalClr.A >> 4 //divide by 64
+			col = append(col, clr)
+		}
+		gray = append(gray, col)
+	}
+	return 
 }
 
 func ConvertImagetoMonochromeEPDTensor(img *image.Image)(monochrome [][]uint8){
@@ -439,5 +706,54 @@ func fsDitheringGreyTensorWithThreshold(pixels [][]color.Color, threshold int) (
 	return // bigger width + 2 and height + 2
 }
 
+
+func GetEPDBuffer_4Gray(imgTensor [][]uint8) []byte{ //one unint8 represents one pixel
+	imgWidth := len(imgTensor)
+	imgHeight := len(imgTensor[0]) 
+	buf := make([]byte, EPD_WIDTH/4 * EPD_HEIGHT)
+	for b:=0; b < EPD_WIDTH/4; b++{
+		buf[b] = 0xff
+	}
+
+
+	var i int
+	if imgWidth == EPD_WIDTH && imgHeight == EPD_HEIGHT{
+		//portrait
+		for y:=0; y < imgHeight; y++ {
+			for x:= 0; x < imgWidth; x++ {
+				if imgTensor[x][y] == 0xC0{
+					imgTensor[x][y] = 0x80
+				} else if imgTensor[x][y] == 0x80{
+					imgTensor[x][y] = 0x40
+				}
+				i += 1
+				if (i % 4 == 0){ //every 4 bytes in tensor
+					buf[int(x+(y * EPD_HEIGHT)/4)] = (imgTensor[x-3][y]&0xc0) | ((imgTensor[x-2][y]&0xc0) >> 2) | ((imgTensor[x-1][y]&0xc0) >> 4) | ((imgTensor[x][y]&0xc0) >> 6)
+				}
+			}
+		}
+	} else if imgWidth == EPD_HEIGHT && imgHeight == EPD_WIDTH {
+		//landscape
+		for x:=0; x < imgWidth; x++ {
+			for y:=0; y < imgHeight; y++{
+				newx := y //buff space
+				newy := EPD_HEIGHT - x - 1
+
+				if imgTensor[x][y] == 0xC0{
+					imgTensor[x][y] = 0x80
+				} else if imgTensor[x][y] == 0x80{
+					imgTensor[x][y] = 0x40
+				}
+				i += 1
+				if (i % 4 == 0){ //every 4 bytes in tensor
+					buf[int(newx + (newy * EPD_HEIGHT)/4)] = (imgTensor[x][y-3]&0xc0) | ((imgTensor[x][y-2]&0xc0) >> 2) | ((imgTensor[x][y-1]&0xc0) >> 4) | ((imgTensor[x][y]&0xc0) >> 6)
+				}
+
+			}
+		}
+	}
+	return buf
+
+}
 
 
