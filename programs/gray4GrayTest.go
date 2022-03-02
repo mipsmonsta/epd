@@ -13,7 +13,7 @@ func main() {
 	e := epd.Epd{
 		Config: epd_config.EpdConfig{},
 	}
-	e.Setup()
+	e.Setup_4Gray()
 	e.Clear()
 
 	img, err := imageutil.OpenImage("../imageutil/test/test.jpg")

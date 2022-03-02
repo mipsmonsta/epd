@@ -65,10 +65,10 @@ imageutil/imageutil.go - where you can use the functions written to manipulate i
 Implemented:
 - Display image in monochrome (1 bit black and white) with / without dithering
 - [Flody-Steinberg Dithering](https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering)
-- Auto detect orientation (portriat or landscape) and fit into the screen size
+- Auto detect orientation (portriat or landscape) and fit onto the display size
+- Display Image in 4 Shades of Grayscale (2 bits)
 
-Yet to implement:
-- 4 Shades Greyscale display of image
+
 
 
 
