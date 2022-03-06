@@ -1,4 +1,4 @@
-module epd
+module github.com/mipsmonsta/epd
 
 go 1.17
 
