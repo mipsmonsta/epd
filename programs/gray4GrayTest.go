@@ -1,11 +1,13 @@
 package main
 
 import (
-	"epd"
-	"epd/epd_config"
-	"epd/imageutil"
 	"fmt"
 	"os"
+
+	"github.com/mipsmonsta/epd/epd_config"
+	"github.com/mipsmonsta/epd/imageutil"
+
+	"github.com/mipsmonsta/epd"
 )
 
 func main() {

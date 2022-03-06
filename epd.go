@@ -1,13 +1,15 @@
 package epd
 
 import (
-	"epd/epd_config"
-	"epd/imageutil"
 	"fmt"
 	"image"
 	"image/color"
 	"log"
 	"time"
+
+	"github.com/mipsmonsta/epd/imageutil"
+
+	"github.com/mipsmonsta/epd/epd_config"
 
 	"periph.io/x/conn/v3/gpio"
 )
