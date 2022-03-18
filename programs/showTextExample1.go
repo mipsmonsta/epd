@@ -19,7 +19,7 @@ func main() {
 	e.Setup()
 	e.Clear()
 
-	e.Display(&img, epd.MODE_MONO_DITHER_ON)
+	e.Display(&img, epd.MODE_MONO_DITHER_OFF)
 
 	e.Sleep()
 }
