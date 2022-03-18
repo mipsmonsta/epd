@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	text := "It's a nice day to be working in the park. Always believe that something good will happen to you."
+	text := "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry."
 	img, err := fontutil.PrintCenterWhiteTextBlackImage(20.0, 264, 176, text, true, false) //black text on white 
 	if err != nil {
 		panic(err)
