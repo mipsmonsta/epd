@@ -8,7 +8,7 @@ import (
 
 func main() {
 	text := "It's a nice day to be working in the park. Always believe that something good will happen to you."
-	img, err := fontutil.PrintCenterWhiteTextBlackImage(13.0, 264, 176, text, true, false) //black text on white 
+	img, err := fontutil.PrintCenterWhiteTextBlackImage(20.0, 264, 176, text, true, false) //black text on white 
 	if err != nil {
 		panic(err)
 	}
