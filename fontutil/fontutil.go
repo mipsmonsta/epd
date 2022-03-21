@@ -2,6 +2,7 @@ package fontutil
 
 import (
 	"errors"
+	"fmt"
 	"image"
 	"image/draw"
 	"image/jpeg"
@@ -18,7 +19,12 @@ import (
 )
 
 
-var ErrToBigForScreen = errors.New("content too big")
+var (
+	
+	ErrTooBigForScreen = errors.New("content too big")
+	ErrContinueNextScreen = errors.New("content spill to next screen")
+
+)
 
 func LoadStandardFont() (font *truetype.Font, err error) {
 	font, err = truetype.Parse(goregular.TTF)
@@ -29,7 +35,7 @@ func LoadStandardFont() (font *truetype.Font, err error) {
 	
 }
 
-func PrintCenterWhiteTextBlackImage(fontSize float64, imgWidth int, imgHeight int, text string, invertColors bool, debug bool) (image.Image, error){
+func PrintCenterWhiteTextBlackImage(fontSize float64, imgWidth int, imgHeight int, text string, invertColors bool, debug bool) (img image.Image, spill_text []string, err error){
 
 	f, err := LoadStandardFont() 
 	if err != nil{
@@ -72,7 +78,10 @@ func PrintCenterWhiteTextBlackImage(fontSize float64, imgWidth int, imgHeight in
 		_, _ = c.DrawString(text, pt) 
 
 		if textHeight > allowableHeight {
-			return nil, ErrToBigForScreen
+			rgba = nil
+			spill_text = append(spill_text, "")
+			err = ErrTooBigForScreen
+			return
 		}
 	} else {
 		//determine how many rows are needed
@@ -81,21 +90,38 @@ func PrintCenterWhiteTextBlackImage(fontSize float64, imgWidth int, imgHeight in
 		lineWidth := 0
 		splitStrings := strings.Fields(text) //empty string, so split by each word
 		
-		if len(splitStrings) == 1 { //text is a very long string, cannot fit screen width
-			return nil, ErrToBigForScreen
+		//check if any words itself is longer than imgWidth
+		for _, splittedText := range(splitStrings){
+			strWidth := font.MeasureString(face, splittedText + " ").Ceil()
+			if strWidth > allowableWidth {
+				rgba = nil
+				spill_text = append(spill_text, "")
+				err = ErrTooBigForScreen
+				return
+			}
 		}
 		
+		
 		//layout
-		for _, segString := range(splitStrings){
+		for i, segString := range(splitStrings){
 			strWidth := font.MeasureString(face, segString + " ").Ceil()
-			if strWidth + lineWidth < imgWidth {
+			if strWidth + lineWidth < allowableWidth {
 				//stay on line
 				lineString += segString + " "
 				lineWidth += strWidth
 			} else { //new row
 				//let write the previous row
 				if 5 + totalRows * textHeight > allowableHeight {
-					return nil, ErrToBigForScreen
+					//recover spill over text
+					spill_text = strings.Fields(lineString)
+					spill_text = append(spill_text, splitStrings[i:]...)
+					err = ErrContinueNextScreen
+
+					if debug {
+						_ = printDebug(rgba, "./test/test.jpg")
+					}	
+					
+					return
 				}
 				pt:= freetype.Pt(5, 5 + totalRows * textHeight)
 				_, _= c.DrawString(lineString, pt)
@@ -106,22 +132,30 @@ func PrintCenterWhiteTextBlackImage(fontSize float64, imgWidth int, imgHeight in
 			}
 		}
 		//last row
-		pt:= freetype.Pt(5, 5 + totalRows * textHeight)
+		pt := freetype.Pt(5, 5 + totalRows * textHeight)
 		_, _= c.DrawString(lineString, pt)
 	}
 
 	if debug {
-		file, err := os.Create("./test/test.jpg")
-		if err != nil{
-			log.Fatalf("cannot save file to filepath: %s", err)
-		}
-		err = jpeg.Encode(file, rgba, nil)
-		if err != nil {
-			log.Fatalf("Cannot save as jpeg: %s\n", err)
-		}
+		_ = printDebug(rgba, "./test/test.jpg")
 	}
+	img = rgba
+	spill_text = append(spill_text, "")
+	err = nil
+	return
 
-	return rgba, nil
 }
 
+func printDebug(img image.Image, filePath string) error {
+	file, err := os.Create(filePath)
+		if err != nil{
+			return fmt.Errorf("cannot save file to filepath: %w\n", err)
+		}
+		err = jpeg.Encode(file, img, nil)
+		if err != nil {
+			return fmt.Errorf("cannot save as jpeg: %w\n", err)
+		}
+
+		return nil
+}
 
