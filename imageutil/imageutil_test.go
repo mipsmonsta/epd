@@ -1,6 +1,7 @@
 package imageutil
 
 import (
+	"image/png"
 	"os"
 	"testing"
 )
@@ -261,4 +262,80 @@ func TestOrientateAndFitImagePortrait(t *testing.T){
 	if realSize == false {
 		t.Errorf("Zero size image obtained back, encode fail")
 	}
+}
+
+func TestDrawQRLowerRight(t *testing.T){
+	img, err := PrintQRCodeWithWhiteBgImageWithURL("https://www.arstechnica.com", 264, 176, QRLowerRightCorner, 5)
+	if err != nil{
+		t.Errorf("error: %s\n", err)
+		return
+	}
+	path := "./test/test_qr_lower_right.png"
+	w, err := os.Create(path)
+	if err != nil {
+		t.Errorf("error: %s\n", err)
+	}
+	defer w.Close()
+	png.Encode(w, img)
+}
+
+func TestDrawQRLowerLeft(t *testing.T){
+	img, err := PrintQRCodeWithWhiteBgImageWithURL("https://www.arstechnica.com", 264, 176, QRLowerLeftCorner, 5)
+	if err != nil{
+		t.Errorf("error: %s\n", err)
+		return
+	}
+	path := "./test/test_qr_lower_left.png"
+	w, err := os.Create(path)
+	if err != nil {
+		t.Errorf("error: %s\n", err)
+	}
+	defer w.Close()
+	png.Encode(w, img)
+}
+
+func TestDrawQRUpperLeft(t *testing.T){
+	img, err := PrintQRCodeWithWhiteBgImageWithURL("https://www.arstechnica.com", 264, 176, QRUpperLeftCorner, 5)
+	if err != nil{
+		t.Errorf("error: %s\n", err)
+		return
+	}
+	path := "./test/test_qr_upper_left.png"
+	w, err := os.Create(path)
+	if err != nil {
+		t.Errorf("error: %s\n", err)
+	}
+	defer w.Close()
+	png.Encode(w, img)
+}
+
+
+func TestDrawQRUpperRight(t *testing.T){
+	img, err := PrintQRCodeWithWhiteBgImageWithURL("https://www.arstechnica.com", 264, 176, QRUpperRightCorner, 5)
+	if err != nil{
+		t.Errorf("error: %s\n", err)
+		return
+	}
+	path := "./test/test_qr_upper_right.png"
+	w, err := os.Create(path)
+	if err != nil {
+		t.Errorf("error: %s\n", err)
+	}
+	defer w.Close()
+	png.Encode(w, img)
+}
+
+func TestDrawQRMiddle(t *testing.T){
+	img, err := PrintQRCodeWithWhiteBgImageWithURL("https://www.arstechnica.com", 264, 176, QRMiddle, 5)
+	if err != nil{
+		t.Errorf("error: %s\n", err)
+		return
+	}
+	path := "./test/test_qr_middle.png"
+	w, err := os.Create(path)
+	if err != nil {
+		t.Errorf("error: %s\n", err)
+	}
+	defer w.Close()
+	png.Encode(w, img)
 }

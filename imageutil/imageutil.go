@@ -1,6 +1,7 @@
 package imageutil
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/color"
@@ -11,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/disintegration/imaging"
+	qrcode "github.com/skip2/go-qrcode"
 	"golang.org/x/image/draw"
 )
 
@@ -20,6 +22,11 @@ const (
 	ScaleBetterQ
 	ScaleGoodQ
 	ScaleNormalQ
+	QRLowerRightCorner
+	QRLowerLeftCorner
+	QRUpperLeftCorner
+	QRUpperRightCorner
+	QRMiddle
 )
 
 func OpenImage(path string) (image.Image, error) {
@@ -185,3 +192,69 @@ func OrientateAndFitImage(img *image.Image, toWidth int, toHeight int) image.Ima
 	}
 	return result
 }
+
+func generateQRCodeImageFromURL(url string, size int) (image.Image, error) {
+
+	var png []byte
+
+	png, err := qrcode.Encode(url, qrcode.Medium, size)
+	if err != nil {
+		return nil, err
+	}
+
+	r := bytes.NewReader(png)
+	qrImg, _, err := image.Decode(r)
+	
+	return qrImg, err
+	
+}
+
+func PrintQRCodeWithWhiteBgImageWithURL(url string, width, height int, corner int, offsetCorner int) (image.Image, error) {
+
+	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
+
+	qr, err := generateQRCodeImageFromURL(url, 512)
+	if err != nil {
+		return nil, err
+	}
+
+	//resize QR code - half of the shortest end
+	var ss int 
+	if width < height {
+		ss = width
+	} else {
+		ss = height
+	}
+	scaleTo := ss / 2
+	qr_scaled := ScaleImage(&qr, scaleTo, scaleTo, ScaleBestQ)
+	// f, err := os.Create("./test/test_qr.png")
+
+	// png.Encode(f, qr_scaled)
+
+	//draw white background
+	bg := image.White
+	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{X: 0, Y: 0}, draw.Src)
+
+	//compute qr top left point in dst
+	var topLeftQR image.Point
+	switch corner {
+	case QRLowerRightCorner:
+		topLeftQR = image.Point{X: width - scaleTo - offsetCorner, Y: height - scaleTo - offsetCorner}
+	case QRLowerLeftCorner:
+		topLeftQR = image.Point{X: offsetCorner, Y: height - scaleTo - offsetCorner}
+	case QRUpperRightCorner:
+		topLeftQR = image.Point{X: width - scaleTo - offsetCorner, Y: offsetCorner}
+	case QRUpperLeftCorner:
+		topLeftQR = image.Point{X: offsetCorner, Y: offsetCorner}
+	case QRMiddle:
+		topLeftQR = image.Point{X: width / 2 - scaleTo / 2, Y: height / 2 - scaleTo / 2}
+	default:
+		return nil, fmt.Errorf("wrong argument for parameter corner")
+	}
+
+	//draw QR on background
+	draw.Draw(rgba, image.Rect(topLeftQR.X, topLeftQR.Y, topLeftQR.X + scaleTo, topLeftQR.Y + scaleTo), qr_scaled, image.Point{X: 0, Y:0}, draw.Src)
+	return rgba, nil
+	
+}
+
